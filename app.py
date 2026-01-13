@@ -1,5 +1,6 @@
 from flask import Flask, request, redirect, make_response
 from datetime import datetime
+from zoneinfo import ZoneInfo  # Python 3.9+
 import uuid
 import os
 
@@ -14,15 +15,18 @@ LOG_FILE = os.path.join(os.path.dirname(__file__), "clicks.log")
 # Function to log visitor info
 def log_click(visitor_id):
     try:
-        time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+        # Malaysia time
+        malaysia_time = datetime.utcnow().replace(tzinfo=ZoneInfo("UTC")).astimezone(ZoneInfo("Asia/Kuala_Lumpur"))
+        time_str = malaysia_time.strftime("%Y-%m-%d %H:%M:%S")
+
         ip = request.headers.get("X-Forwarded-For", request.remote_addr)
         ua = request.headers.get("User-Agent")
 
         with open(LOG_FILE, "a") as f:
-            f.write(f"{time} | {visitor_id} | {ip} | {ua}\n")
+            f.write(f"{time_str} | {visitor_id} | {ip} | {ua}\n")
+            f.flush()  # <- ensures immediate write
 
-        # Optional: print to console for Render logs
-        print(f"[LOG] {time} | {visitor_id} | {ip} | {ua}")
+        print(f"[LOG] {time_str} | {visitor_id} | {ip} | {ua}")
 
     except Exception as e:
         print(f"[ERROR] Logging failed: {e}")
@@ -54,7 +58,7 @@ def stats():
         return "No clicks yet."
 
     total_clicks = 0
-    visitor_counts = {}  # store total clicks per visitor
+    visitor_counts = {}
     log_entries = []
 
     with open(LOG_FILE, "r") as f:
@@ -71,17 +75,12 @@ def stats():
                     "ua": ua
                 })
 
-    # Count unique visitors
     unique_visitors = len(visitor_counts)
-
-    # Sort newest first
     log_entries.reverse()
 
-    # Build HTML table
-    table_html = "<table border='1' cellpadding='5'><tr><th>Time (UTC)</th><th>Visitor ID</th><th>IP</th><th>Browser</th><th>Total Clicks</th></tr>"
-    for entry in log_entries[-50:]:  # show last 50 clicks
+    table_html = "<table border='1' cellpadding='5'><tr><th>Time (MYT)</th><th>Visitor ID</th><th>IP</th><th>Browser</th><th>Total Clicks</th></tr>"
+    for entry in log_entries[-50:]:
         count = visitor_counts.get(entry["visitor_id"], 0)
-        # Highlight repeated visitors in red
         visitor_color = " style='color:red'" if count > 1 else ""
         table_html += (
             f"<tr{visitor_color}>"
@@ -101,8 +100,6 @@ def stats():
         f"{table_html}"
     )
 
-
-# Render deployment uses this
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)

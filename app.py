@@ -47,25 +47,60 @@ def track():
     )
     return response
 
-# Stats route to see total and unique clicks
+# Stats route to see detailed click info with total clicks per visitor
 @app.route("/stats")
 def stats():
     if not os.path.exists(LOG_FILE):
         return "No clicks yet."
 
     total_clicks = 0
-    unique_visitors = set()
+    visitor_counts = {}  # store total clicks per visitor
+    log_entries = []
 
     with open(LOG_FILE, "r") as f:
         for line in f:
-            total_clicks += 1
-            visitor_id = line.split("|")[1].strip()
-            unique_visitors.add(visitor_id)
+            parts = line.strip().split("|")
+            if len(parts) == 4:
+                time, visitor_id, ip, ua = [p.strip() for p in parts]
+                total_clicks += 1
+                visitor_counts[visitor_id] = visitor_counts.get(visitor_id, 0) + 1
+                log_entries.append({
+                    "time": time,
+                    "visitor_id": visitor_id,
+                    "ip": ip,
+                    "ua": ua
+                })
+
+    # Count unique visitors
+    unique_visitors = len(visitor_counts)
+
+    # Sort newest first
+    log_entries.reverse()
+
+    # Build HTML table
+    table_html = "<table border='1' cellpadding='5'><tr><th>Time (UTC)</th><th>Visitor ID</th><th>IP</th><th>Browser</th><th>Total Clicks</th></tr>"
+    for entry in log_entries[-50:]:  # show last 50 clicks
+        count = visitor_counts.get(entry["visitor_id"], 0)
+        # Highlight repeated visitors in red
+        visitor_color = " style='color:red'" if count > 1 else ""
+        table_html += (
+            f"<tr{visitor_color}>"
+            f"<td>{entry['time']}</td>"
+            f"<td>{entry['visitor_id']}</td>"
+            f"<td>{entry['ip']}</td>"
+            f"<td>{entry['ua']}</td>"
+            f"<td>{count}</td>"
+            f"</tr>"
+        )
+    table_html += "</table>"
 
     return (
-        f"Total accesses: {total_clicks}<br>"
-        f"Unique visitors: {len(unique_visitors)}"
+        f"<b>Total accesses:</b> {total_clicks}<br>"
+        f"<b>Unique visitors:</b> {unique_visitors}<br><br>"
+        f"<b>Recent clicks (newest first, repeated visitors in red, total clicks per visitor shown):</b><br>"
+        f"{table_html}"
     )
+
 
 # Render deployment uses this
 if __name__ == "__main__":

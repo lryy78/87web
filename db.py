@@ -15,7 +15,7 @@ def init_db():
             ip TEXT,
             user_agent TEXT,
             page TEXT,
-            visit_time DATETIME DEFAULT CURRENT_TIMESTAMP
+            visit_time 
         )
     """)
 

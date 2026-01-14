@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Messages - TrackLink{% endblock %}
+{% block header %}Messages{% endblock %}
+
+{% block content %}
+<form method="post" enctype="multipart/form-data">
+    <input type="text" name="message" placeholder="Type your message here..."><br>
+    <input type="file" name="file" accept="image/*,video/*,.gif"><br><br>
+    <button type="submit">Send</button>
+</form>
+
+<form method="post" action="/edit_name">
+    <input type="text" name="new_name" placeholder="Change display name">
+    <button type="submit">Update Name</button>
+</form>
+
+<hr>
+
+{% for m in messages %}
+<div class="message-box" style="background-color:{% if m['display_name']==name %}#FFC600{% else %}rgba(255,255,255,0.7){% endif %};">
+    <strong>{{ m['time'] }} | {{ m['display_name'] }}</strong><br>
+    {% if m['text'] %}<p>{{ m['text'] }}</p>{% endif %}
+    {% if m['file_path'] %}
+        {% if m['file_path'].endswith('.mp4') or m['file_path'].endswith('.webm') or m['file_path'].endswith('.mov') %}
+            <video controls>
+                <source src="{{ url_for('uploaded_file', filename=m['file_path']) }}">
+            </video>
+        {% else %}
+            <img src="{{ url_for('uploaded_file', filename=m['file_path']) }}">
+        {% endif %}
+    {% endif %}
+    {% if m['display_name']==name %}
+    <form method="post" action="/delete_message" class="delete-btn">
+        <input type="hidden" name="id" value="{{ m['id'] }}">
+        <button type="submit">Delete</button>
+    </form>
+    {% endif %}
+</div>
+{% endfor %}
+{% endblock %}

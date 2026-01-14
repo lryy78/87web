@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Something is forming</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --bg-color: #020b1a;
+        --accent-blue: #00d2ff;
+        --glass: rgba(255, 255, 255, 0.05);
+        --border: rgba(255, 255, 255, 0.12);
+    }
+
+    body {
+        margin: 0;
+        min-height: 100vh;
+        background: radial-gradient(circle at top, #0a1f44, #020b1a);
+        font-family: 'Inter', sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        flex-direction: column;
+        gap: 25px;
+        -webkit-font-smoothing: antialiased;
+        text-align: center;
+        padding: 20px;
+    }
+
+    /* Heading & Subtitle */
+    h1 {
+        font-weight: 800;
+        font-size: 2.8rem;
+        margin: 0;
+        letter-spacing: -1px;
+        background: linear-gradient(to bottom, #fff, #888);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+        font-weight: 400;
+        font-size: 1.2rem;
+        line-height: 1.6;
+        opacity: 0.8;
+        margin-bottom: 15px;
+        font-family: 'Arial Narrow', Arial, sans-serif;
+    }
+
+    /* Timer Container */
+    .timer-container {
+        padding: 40px 30px;
+        border-radius: 24px;
+        background: var(--glass);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid var(--border);
+        box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        width: 85%;
+        max-width: 420px;
+    }
+
+    .date {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        color: var(--accent-blue);
+        margin-bottom: 12px;
+        font-weight: 600;
+    }
+
+    .time {
+        font-size: 3.5rem;
+        font-weight: 800;
+        letter-spacing: -2px;
+        margin-bottom: 15px;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .greeting {
+        font-size: 1.05rem;
+        line-height: 1.5;
+        opacity: 0.8;
+        font-weight: 300;
+        font-family: 'Arial Narrow', Arial, sans-serif;
+        transition: opacity 0.5s ease;
+    }
+
+    /* Developing Container */
+    .developing-container {
+        padding: 18px;
+        border-radius: 20px;
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid var(--border);
+        max-width: 420px;
+        width: 85%;
+    }
+
+    .pulse-icon {
+        font-style: normal;
+        animation: pulse 2s infinite;
+    }
+
+    .status-text {
+        font-size: 0.85rem;
+        font-weight: 400;
+        color: rgba(255, 255, 255, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        animation: blink 4.8s infinite;
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.2); opacity: 0.7; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes blink {
+        0%, 50%, 100% { opacity: 1; }
+        25%, 75% { opacity: 0; }
+    }
+
+    @media (max-width: 480px) {
+        h1 { font-size: 2rem; }
+        .subtitle { font-size: 1rem; }
+        .time { font-size: 2.8rem; }
+    }
+</style>
+</head>
+<body>
+
+    <h1>Something is forming</h1>
+
+    <div class="subtitle">
+        You weren’t meant to arrive yet.<br>
+        But since you’re here… maybe stay a moment.
+    </div>
+
+    <div class="timer-container">
+        <div class="date" id="malaysia-date">-- --- ----</div>
+        <div class="time" id="malaysia-time">00:00:00</div>
+        <div class="greeting" id="greeting-text">Loading...</div>
+    </div>
+
+    <div class="developing-container">
+        <div class="status-text">
+            <i class="pulse-icon">🚧</i>
+            <span>something developing, updates randomly.</span>
+        </div>
+    </div>
+
+<script>
+function updateMalaysiaTime() {
+    const now = new Date();
+    const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+    const malaysiaTime = new Date(utc + 8*60*60*1000);
+
+    const dateOptions = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+    const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+
+    document.getElementById('malaysia-date').textContent = malaysiaTime.toLocaleDateString('en-GB', dateOptions);
+    document.getElementById('malaysia-time').textContent = malaysiaTime.toLocaleTimeString('en-GB', timeOptions);
+
+    const hours = malaysiaTime.getHours();
+    const minutes = malaysiaTime.getMinutes();
+    let greeting = "";
+
+    if (hours === 6 || hours === 7) {
+        greeting = "Good morning! Hope you slept well and enjoy your breakfast.";
+    } else if (hours === 8) {
+        greeting = "Morning focus! 上班要加油!";
+    } else if (hours >= 9 && hours < 11) {
+        greeting = "Morning productivity! Jiayouuu!";
+    } else if (hours === 11) {
+        greeting = "再坚持一下下, then can eat lunch liaooo!";
+    } else if (hours >= 12 && hours < 14) {
+        greeting = "Enjoy your meal! Take a short break or nap luu";
+    } else if (hours >= 14 && hours < 16) {
+        greeting = "Eat liao, rest liaoo! 上班加油!";
+    } else if (hours === 16) {
+        greeting = "再坚持一下下, then can off work luu!";
+    } else if (hours === 17 || (hours === 18 && minutes <= 20)) {
+        greeting = "Yayyy off work luu! 路上小心, 不要被挤扁了!";
+    } else if (hours === 18 && minutes > 20 && hours < 19 || (hours === 19 && minutes <= 30)) {
+        greeting = "Enjoy dinner!! Eat more!";
+    } else if ((hours === 19 && minutes > 30) || (hours >= 20 && hours < 21)) {
+        greeting = "Have fun! Exercise or enjoy your me-time!";
+    } else if (hours === 21 || (hours === 22 && minutes <= 0)) {
+        greeting = "Need to prepare to rest / get into bed!";
+    } else if (hours === 22 && minutes > 0 && minutes <= 30) {
+        greeting = "Late liao! Go rest, don't play phone dy!";
+    } else if ((hours === 22 && minutes > 30) || (hours === 23 && minutes <= 59)) {
+        greeting = "Good night! Rest well!";
+    } else {
+        greeting = "Sweet dreams! Sleep well until morning!";
+    }
+
+    document.getElementById('greeting-text').textContent = greeting;
+}
+
+setInterval(updateMalaysiaTime, 1000);
+updateMalaysiaTime();
+</script>
+
+</body>
+</html>

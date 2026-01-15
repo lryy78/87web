@@ -10,7 +10,7 @@ DB_NAME = os.path.join(BASE_DIR, "..", "activity.db")  # DB one level up
 def get_db():
     return sqlite3.connect(DB_NAME)
 
-def init_db():
+def init_db_activity():
     conn = get_db()
     c = conn.cursor()
     c.execute("""
@@ -41,5 +41,4 @@ def log_visit(page="unknown"):
     except Exception as e:
         print(f"Failed to log visit: {e}")  # log to console if fails
 
-# Initialize DB
-init_db()
+

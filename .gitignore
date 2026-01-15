@@ -1,0 +1,38 @@
+# SQLite databases
+*.db
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+
+# Flask uploads
+chat/uploads/
+landing/__pycache__/
+admin/__pycache__/
+chat/__pycache__/
+# any other __pycache__ folders
+
+# Flask instance folder (if used)
+instance/
+
+# Environment / virtual environment
+.env
+venv/
+env/
+*.venv
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE/editor files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Logs
+*.log

@@ -1,6 +1,6 @@
 from flask import Flask
 import os
-from chat.routes import chat_bp, init_db
+from chat.routes import chat_bp, init_db_chat
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -14,12 +14,9 @@ app = Flask(
 app.config["UPLOAD_FOLDER"] = os.path.join(BASE_DIR, "chat", "uploads")
 os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
-# Initialize database
-init_db()
-
 # Register blueprint
 app.register_blueprint(chat_bp)
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))  
+    port = int(os.environ.get("PORT", 5001))  
     app.run(host="0.0.0.0", port=port, debug=True)

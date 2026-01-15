@@ -1,22 +1,15 @@
 from flask import Flask
+from chat import chat_bp
+
+app = Flask(__name__)
+app.secret_key = "your-secret-key"
+app.config["UPLOAD_FOLDER"] = "chat/uploads"
 import os
-from chat.routes import chat_bp, init_db_chat
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
-app = Flask(
-    __name__,
-    template_folder=os.path.join(BASE_DIR, "chat", "templates"),
-    static_folder=os.path.join(BASE_DIR, "chat"),
-)
-
-# Upload folder
-app.config["UPLOAD_FOLDER"] = os.path.join(BASE_DIR, "chat", "uploads")
 os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
-# Register blueprint
+# Register chat blueprint
 app.register_blueprint(chat_bp)
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5001))  
+    port = int(os.environ.get("PORT", 5001))
     app.run(host="0.0.0.0", port=port, debug=True)

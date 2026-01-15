@@ -3,8 +3,8 @@ import os
 from flask import Flask
 from admin.routes import admin_bp
 from landing.routes import landing_bp
-from landing.utils import log_visit, init_db_activity
-from chat.routes import chat_bp, init_db_chat
+
+from chat.routes import chat_bp
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TEMPLATE_DIR = os.path.join(BASE_DIR, "landing", "templates")
@@ -19,9 +19,7 @@ app.register_blueprint(admin_bp)
 app.register_blueprint(landing_bp, url_prefix="/")  # "/" prefix
 app.register_blueprint(chat_bp, url_prefix="/chat") 
 
-# ---------------- Initialize Databases ----------------
-init_db_activity()
-init_db_chat()
+
 
 # Ensure the folder exists
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)

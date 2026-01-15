@@ -11,6 +11,7 @@
         --accent-blue: #00d2ff;
         --glass: rgba(255, 255, 255, 0.05);
         --border: rgba(255, 255, 255, 0.12);
+        --error-red: #ff4d4d;
     }
 
     body {
@@ -23,13 +24,12 @@
         justify-content: center;
         color: white;
         flex-direction: column;
-        gap: 25px;
+        gap: 20px;
         -webkit-font-smoothing: antialiased;
         text-align: center;
         padding: 20px;
     }
 
-    /* Heading & Subtitle */
     h1 {
         font-weight: 800;
         font-size: 2.8rem;
@@ -42,28 +42,25 @@
 
     .subtitle {
         font-weight: 400;
-        font-size: 1.2rem;
-        line-height: 1.6;
-        opacity: 0.8;
-        margin-bottom: 15px;
-        font-family: 'Arial Narrow', Arial, sans-serif;
+        font-size: 1.1rem;
+        opacity: 0.7;
     }
 
-    /* Timer Container */
+    /* Timer Area */
     .timer-container {
         padding: 40px 30px;
-        border-radius: 24px;
+        border-radius: 24px 24px 0 0;
         background: var(--glass);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
         border: 1px solid var(--border);
-        box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-        width: 85%;
+        width: 100%;
         max-width: 420px;
+        box-sizing: border-box;
     }
 
     .date {
-        font-size: 0.85rem;
+        font-size: 0.8rem;
         text-transform: uppercase;
         letter-spacing: 3px;
         color: var(--accent-blue);
@@ -74,138 +71,173 @@
     .time {
         font-size: 3.5rem;
         font-weight: 800;
-        letter-spacing: -2px;
-        margin-bottom: 15px;
-        font-variant-numeric: tabular-nums;
+        letter-spacing: -1px;
     }
 
-    .greeting {
-        font-size: 1.05rem;
-        line-height: 1.5;
-        opacity: 0.8;
-        font-weight: 300;
-        font-family: 'Arial Narrow', Arial, sans-serif;
-        transition: opacity 0.5s ease;
-    }
-
-    /* Developing Container */
-    .developing-container {
-        padding: 18px;
-        border-radius: 20px;
-        background: rgba(0, 0, 0, 0.2);
-        border: 1px solid var(--border);
+    /* 🔒 LOCKED GREETING AREA */
+    .lock-zone {
+        position: relative;
+        width: 100%;
         max-width: 420px;
-        width: 85%;
-    }
-
-    .pulse-icon {
-        font-style: normal;
-        animation: pulse 2s infinite;
-    }
-
-    .status-text {
-        font-size: 0.85rem;
-        font-weight: 400;
-        color: rgba(255, 255, 255, 0.5);
+        background: rgba(255, 255, 255, 0.02);
+        border-left: 1px solid var(--border);
+        border-right: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+        border-radius: 0 0 24px 24px;
+        padding: 60px 20px; /* Increased padding to stop "squeeze" */
+        box-sizing: border-box;
+        overflow: hidden;
+        min-height: 300px;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 10px;
-        animation: blink 4.8s infinite;
     }
 
-    @keyframes pulse {
-        0% { transform: scale(1); opacity: 1; }
-        50% { transform: scale(1.2); opacity: 0.7; }
-        100% { transform: scale(1); opacity: 1; }
-    }
-
-    @keyframes blink {
-        0%, 50%, 100% { opacity: 1; }
-        25%, 75% { opacity: 0; }
-    }
-
-    @media (max-width: 480px) {
-        h1 { font-size: 2rem; }
-        .subtitle { font-size: 1rem; }
-        .time { font-size: 2.8rem; }
-    }
-
-    /* ---------- VERIFY OVERLAY ---------- */
     #verify-overlay {
-        position: fixed;
+        position: absolute;
         inset: 0;
-        background: radial-gradient(circle at top, #0a1f44, #020b1a);
+        background: rgba(4, 15, 36, 0.98); 
         display: flex;
         align-items: center;
         justify-content: center;
-        z-index: 9999;
+        z-index: 10;
+        backdrop-filter: blur(30px);
     }
 
-    .verify-box {
-        background: rgba(255,255,255,0.05);
-        border: 1px solid rgba(255,255,255,0.15);
-        backdrop-filter: blur(20px);
-        padding: 30px;
-        border-radius: 20px;
-        width: 300px;
-        box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+    .verify-box { 
+        width: 80%; 
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .verify-box p {
+        margin: 0;
+        font-size: 0.9rem;
+        opacity: 0.8;
     }
 
     .verify-box input {
         width: 100%;
-        padding: 10px;
-        border-radius: 10px;
-        border: none;
-        margin-top: 15px;
+        padding: 14px;
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.15);
         text-align: center;
+        background: rgba(255, 255, 255, 0.05);
+        color: white;
+        box-sizing: border-box;
+        font-size: 1.1rem;
+        letter-spacing: 4px;
+        transition: border 0.3s ease;
+    }
+
+    .verify-box input:focus {
+        outline: none;
+        border-color: var(--accent-blue);
     }
 
     .verify-box button {
         width: 100%;
-        margin-top: 15px;
-        padding: 10px;
+        padding: 14px;
         border-radius: 12px;
         border: none;
-        font-weight: 600;
+        font-weight: 700;
         cursor: pointer;
         background: var(--accent-blue);
+        color: #020b1a;
+        font-size: 1rem;
+        transition: transform 0.2s ease;
     }
 
-    #error-text {
-        color: #ff6b6b;
+    .verify-box button:active {
+        transform: scale(0.98);
+    }
+
+    /* ERROR TEXT - High Visibility */
+    #error-text { 
+        background: rgba(255, 77, 77, 0.15);
+        color: #ff8080;
         font-size: 0.85rem;
-        display: none;
+        padding: 8px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 77, 77, 0.3);
+        margin-top: 5px;
+        display: none; /* Controlled by logic */
+    }
+
+    .greeting {
+        font-size: 1.1rem;
+        line-height: 1.6;
+        opacity: 0.9;
+        font-family: 'Arial Narrow', Arial, sans-serif;
+    }
+
+    /* 🚧 STATUS BAR */
+    .developing-container {
         margin-top: 10px;
+        padding: 18px;
+        border-radius: 20px;
+        background: var(--glass);
+        border: 1px solid var(--border);
+        max-width: 420px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .status-text {
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        animation: blink 4s infinite;
+    }
+
+    .pulse-icon { font-style: normal; animation: pulse 2s infinite; }
+
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.2); opacity: 0.7; }
+    }
+
+    @keyframes blink {
+        0%, 50%, 100% { opacity: 1; }
+        25%, 75% { opacity: 0.4; }
+    }
+
+    @media (max-width: 480px) {
+        h1 { font-size: 2.2rem; }
+        .time { font-size: 2.8rem; }
+        .lock-zone { padding: 40px 20px; }
     }
 </style>
 </head>
 <body>
-    <!-- 🔒 VERIFY OVERLAY -->
-    <div id="verify-overlay">
-        <div class="verify-box">
-            <h2>Verify Birthday</h2>
-            <p style="opacity:.7;font-size:.9rem">Enter to unlock greeting</p>
-
-            <form id="birthday-form" method="POST">
-                <input id="birthday-input" name="birthday" type="password" placeholder="YYMMDD">
-                <button type="submit">Unlock</button>
-            </form>
-
-            <div id="error-text" {% if error %}style="display:block;"{% endif %}>{{ error if error else "" }}</div>
-        </div>
-    </div>
-
 
     <h1>Something is forming</h1>
-
-    <div class="subtitle">
-        hehe hellu..?<br>
-    </div>
+    <div class="subtitle">hehe hellu..?</div>
 
     <div class="timer-container">
         <div class="date" id="malaysia-date">-- --- ----</div>
         <div class="time" id="malaysia-time">00:00:00</div>
+    </div>
+
+    <div class="lock-zone">
+        <div id="verify-overlay">
+            <div class="verify-box">
+                <p style="font-weight:600; letter-spacing: 1px;">🔒 IDENTITY VERIFICATION</p>
+                <p style="font-weight:400; letter-spacing: 1px;">💡Tips: Birthday</p>
+                <form id="birthday-form" method="POST">
+                    <input id="birthday-input" name="birthday" type="password" placeholder="YYMMDD" maxlength="6" autocomplete="off">
+                    <button type="submit">Unlock Content</button>
+                </form>
+                <div id="error-text" {% if error %}style="display:block;"{% endif %}>
+                    ⚠️ {{ error if error else "Invalid birthday, please try again." }}
+                </div>
+            </div>
+        </div>
+        
         <div class="greeting" id="greeting-text">Loading...</div>
     </div>
 
@@ -223,56 +255,41 @@
         {% endif %}
     });
 
-function updateMalaysiaTime() {
-    const now = new Date();
-    const utc = now.getTime() + now.getTimezoneOffset() * 60000;
-    const malaysiaTime = new Date(utc + 8*60*60*1000);
+    function updateMalaysiaTime() {
+        const now = new Date();
+        const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+        const malaysiaTime = new Date(utc + 8*60*60*1000);
 
-    const dateOptions = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
-    const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+        const dateOptions = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+        const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
 
-    document.getElementById('malaysia-date').textContent = malaysiaTime.toLocaleDateString('en-GB', dateOptions);
-    document.getElementById('malaysia-time').textContent = malaysiaTime.toLocaleTimeString('en-GB', timeOptions);
+        document.getElementById('malaysia-date').textContent = malaysiaTime.toLocaleDateString('en-GB', dateOptions);
+        document.getElementById('malaysia-time').textContent = malaysiaTime.toLocaleTimeString('en-GB', timeOptions);
 
-    const hours = malaysiaTime.getHours();
-    const minutes = malaysiaTime.getMinutes();
-    let greeting = "";
+        const hours = malaysiaTime.getHours();
+        const minutes = malaysiaTime.getMinutes();
+        let greeting = "";
 
-    if (hours === 6 || hours === 7) {
-        greeting = "Good morning aaa!! Hope you slept well!!🌞";
-    } else if (hours === 8) {
-        greeting = "Enjoy your breakfast~~ 上班加油!!😺";
-    } else if (hours >= 9 && hours < 11) {
-        greeting = "Ooo 摸鱼一下下hehe Jiayouuu!🐠 ";
-    } else if (hours === 11) {
-        greeting = "再坚持一下下, then can eat lunch liaooo!!🤤";
-    } else if (hours >= 12 && hours < 14) {
-        greeting = "Enjoy your meal!! Then maybe take a short break or nap luu😪";
-    } else if (hours >= 14 && hours < 16) {
-        greeting = "Eat liao, rest liaoo! 上班加油luu!😄";
-    } else if (hours === 16) {
-        greeting = "再坚持一下下, then can off work luu!😆";
-    } else if (hours === 17 || (hours === 18 && minutes <= 20)) {
-        greeting = "Yayyy!! off work luu! 路上小心, 不要被挤扁了 hehe!😬";
-    } else if (hours === 18 && minutes > 20 && hours < 19 || (hours === 19 && minutes <= 30)) {
-        greeting = "Enjoy ur dinner lu!! Eat more!😋";
-    } else if ((hours === 19 && minutes > 30) || (hours >= 20 && hours < 21)) {
-        greeting = "Have fun in exercise or enjoy your me-time!😌";
-    } else if (hours === 21 || (hours === 22 && minutes <= 0)) {
-        greeting = "Aaa need to prepare to get into bed liaoo! you almost feel tired liao der🥱";
-    } else if (hours === 22 && minutes > 0 && minutes <= 30) {
-        greeting = "Late liaoo! Go rest, don't play phone dy heh!😛";
-    } else if ((hours === 22 && minutes > 30) || (hours === 23 && minutes <= 59)) {
-        greeting = "Good night!! Rest well! 😴";
-    } else {
-        greeting = "Sweet dreams!🌛 Sleep well until morning! Don't wake in the middle of the night luu!!";
+        if (hours >= 6 && hours < 8) greeting = "Good morning aaa!! Hope you slept well!!🌞";
+        else if (hours === 8) greeting = "Enjoy your breakfast~~ 上班加油!!😺";
+        else if (hours >= 9 && hours < 11) greeting = "Ooo 摸鱼一下下hehe Jiayouuu!🐠";
+        else if (hours === 11) greeting = "再坚持一下下, then can eat lunch liaooo!!🤤";
+        else if (hours >= 12 && hours < 14) greeting = "Enjoy your meal!! Then maybe take a short break or nap luu😪";
+        else if (hours >= 14 && hours < 16) greeting = "Eat liao, rest liaoo! 上班加油luu!😄";
+        else if (hours === 16) greeting = "再坚持一下下, then can off work luu!😆";
+        else if (hours === 17 || (hours === 18 && minutes <= 20)) greeting = "Yayyy!! off work luu! 路上小心, 不要被挤扁了 hehe!😬";
+        else if (hours >= 18 && hours < 20) greeting = "Enjoy ur dinner lu!! Eat more!😋";
+        else if (hours >= 20 && hours < 21) greeting = "Have fun in exercise or enjoy your me-time!😌";
+        else if (hours >= 21 && hours < 22) greeting = "Aaa need to prepare to get into bed liaoo!🥱";
+        else if (hours === 22 && minutes <= 30) greeting = "Late liaoo! Go rest, don't play phone dy heh!😛";
+        else if (hours >= 22 || hours < 6) greeting = "Good night!! Rest well! 😴";
+        else greeting = "Sweet dreams!🌛";
+
+        document.getElementById('greeting-text').textContent = greeting;
     }
 
-    document.getElementById('greeting-text').textContent = greeting;
-}
-
-setInterval(updateMalaysiaTime, 1000);
-updateMalaysiaTime();
+    setInterval(updateMalaysiaTime, 1000);
+    updateMalaysiaTime();
 </script>
 
 </body>

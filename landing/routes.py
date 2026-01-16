@@ -45,11 +45,13 @@ def landing():
         birthday = request.form.get("birthday", "").strip()
         if birthday in ALLOWED_BIRTHDAYS:
             birthday_verified = True
-            log_visit("landing-birthday-unlocked")  # only logs page name
+            log_visit("landing-success", birthday)  # only logs page name
         else:
             error = "Invalid birthday"
-            log_visit("landing-birthday-failed", extra_info=birthday)  # logs failed birthday
+            log_visit("landing-failed", birthday)
 
+        return {"success": birthday_verified, "error": error}
+    
     elif request.method == "GET":
         log_visit("landing")  # just a normal page visit
 

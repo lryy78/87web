@@ -11,6 +11,8 @@
         --accent-blue: #00d2ff;
         --glass: rgba(255, 255, 255, 0.05);
         --border: rgba(255, 255, 255, 0.12);
+        --cat-white: #ffffff;
+        --cat-shadow: #d1d9e6;
     }
 
     body {
@@ -105,7 +107,6 @@
         backdrop-filter: blur(35px);
     }
 
-    /* Reverted to previous design you liked */
     .verify-box { 
         width: 80%; 
         display: flex;
@@ -238,6 +239,105 @@
         h1 { font-size: 2.2rem; }
         .time { font-size: 2.8rem; }
     }
+
+        /* Cat Container */
+    .cat-container {
+        perspective: 1000px;
+        height: 150px;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+    }
+
+    /* This wrapper handles the circular path */
+    .orbit-wrapper {
+        position: relative;
+        width: 60px;
+        height: 50px;
+        transform-style: preserve-3d;
+        animation: walk-circle 8s linear infinite;
+    }
+
+    .cat-3d {
+        position: relative;
+        width: 60px;
+        height: 50px;
+        background: var(--cat-white);
+        border-radius: 50% 50% 45% 45%;
+        box-shadow: inset -6px -6px 12px var(--cat-shadow), 0 5px 15px rgba(0,0,0,0.2);
+        transform-style: preserve-3d;
+        /* Animation: Self-Spin + Breathing */
+        animation: 
+            self-spin 4s linear infinite,
+            breath 4s ease-in-out infinite;
+    }
+
+    .cat-3d::before, .cat-3d::after {
+        content: ''; position: absolute; top: -12px;
+        width: 0; height: 0;
+        border-left: 10px solid transparent; border-right: 10px solid transparent;
+        border-bottom: 18px solid var(--cat-white);
+    }
+    .cat-3d::before { left: 8px; transform: rotate(-20deg); }
+    .cat-3d::after { right: 8px; transform: rotate(20deg); }
+
+    .eyes-3d {
+        position: absolute; top: 18px; width: 100%;
+        display: flex; justify-content: space-around; padding: 0 14px; box-sizing: border-box;
+    }
+
+    .eye-3d {
+        width: 7px; height: 7px;
+        background: radial-gradient(circle at 30% 30%, #444, #000);
+        border-radius: 50%; animation: blink-eye 4s infinite;
+    }
+
+    .tail-3d {
+        position: absolute; right: -12px; bottom: 8px;
+        width: 25px; height: 10px;
+        background: var(--cat-white); border-radius: 10px;
+        transform-origin: left center;
+        box-shadow: inset -2px -2px 4px var(--cat-shadow);
+        animation: wag 3s ease-in-out infinite;
+    }
+
+    .cat-shadow-floor {
+        position: absolute;
+        bottom: -15px; left: 5px;
+        width: 50px; height: 10px;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 50%;
+        filter: blur(4px);
+        /* Shadow stays under the wrapper as it orbits */
+    }
+
+    /* ANIMATIONS */
+    @keyframes walk-circle {
+        from { transform: rotateY(0deg) translateX(80px) rotateY(0deg); }
+        to { transform: rotateY(360deg) translateX(80px) rotateY(-360deg); }
+    }
+
+    @keyframes self-spin {
+        from { transform: rotateY(0deg); }
+        to { transform: rotateY(360deg); }
+    }
+
+    @keyframes breath {
+        0%, 100% { height: 50px; transform: translateY(0); }
+        50% { height: 53px; transform: translateY(-5px); }
+    }
+
+    @keyframes wag {
+        0%, 100% { transform: rotate(0deg); }
+        50% { transform: rotate(30deg); }
+    }
+
+    @keyframes blink-eye {
+        0%, 95%, 100% { transform: scaleY(1); }
+        97% { transform: scaleY(0.1); }
+    }
 </style>
 </head>
 <body>
@@ -264,14 +364,25 @@
                 </div>
             </div>
         </div>
+
+        <div class="cat-container">
+            <div class="orbit-wrapper">
+                <div class="cat-3d">
+                    <div class="eyes-3d">
+                        <div class="eye-3d"></div>
+                        <div class="eye-3d"></div>
+                    </div>
+                    <div class="tail-3d"></div>
+                </div>
+                <div class="cat-shadow-floor"></div>
+            </div>
+        </div>
         
         <div class="greeting" id="greeting-text">Loading...</div>
 
         <div class="ps-container">
             <span class="ps-label">ps.</span> 
-            can ignore this de ohh.. ukr~🙂‍↕️
-            err not sure if this web suits in the current situation for me? you? us? cause hahah some unexpected things coming through??... 🫠💣
-            haha have fun?!! er haha haha.... ANYWAYS BE HAPPY ALWAYS AND DO TAKE CARE!! 👻
+            lol, dk when will update on it. 
         </div>
     </div>
 
@@ -283,11 +394,76 @@
     </div>
 
 <script>
-    window.addEventListener("load", () => {
-        {% if birthday_verified %}
-            document.getElementById("verify-overlay").style.display = "none";
-        {% endif %}
+    const birthdayVerified = {{ 'true' if birthday_verified else 'false' }};
+</script>
+
+<script>
+    // --- LOGIN & TIMEOUT LOGIC ---
+    const overlay = document.getElementById("verify-overlay");
+    const form = document.getElementById("birthday-form");
+    const input = document.getElementById("birthday-input");
+    const LOCK_TIME_MS = 10 * 60 * 1000; // 1 minute for testing
+
+    function relock() {
+        localStorage.removeItem("loginTime");
+        overlay.style.display = "flex";
+        input.value = "";
+
+        const errorBox = document.getElementById("error-text");
+        if (errorBox) {
+            errorBox.style.display = "none";
+            errorBox.textContent = "";
+        }
+    }
+
+    function checkSession() {
+        const loginTimestamp = localStorage.getItem("loginTime");
+        const now = Date.now();
+
+        if (loginTimestamp) {
+            const timePassed = now - parseInt(loginTimestamp, 10);
+            if (timePassed < LOCK_TIME_MS) {
+                overlay.style.display = "none";
+            } else {
+                relock();
+            }
+        } else {
+            overlay.style.display = "flex";
+        }
+    }
+
+    form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const birthday = input.value.trim();
+
+        // Send to server for verification
+        fetch("/", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: `birthday=${encodeURIComponent(birthday)}`
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                localStorage.setItem("loginTime", Date.now().toString());
+                overlay.style.display = "none";
+            } else {
+                overlay.style.display = "flex";
+                input.value = "";
+                const errorBox = document.getElementById("error-text");
+                errorBox.style.display = "block";
+                errorBox.textContent = data.error || "Invalid birthday, try again.";
+            }
+        })
+        .catch(() => {
+            // fallback on error
+            overlay.style.display = "flex";
+            input.value = "";
+        });
     });
+
+    checkSession();
+    setInterval(checkSession, 1000);
 
     function updateMalaysiaTime() {
         const now = new Date();
@@ -304,20 +480,21 @@
         const minutes = malaysiaTime.getMinutes();
         let greeting = "";
 
-        if (hours >= 6 && hours < 8) greeting = "Good morning aaa!! Hope you slept well!!🌞";
-        else if (hours === 8) greeting = "Enjoy your breakfast~~ 上班加油!!😺";
-        else if (hours >= 9 && hours < 11) greeting = "Ooo 摸鱼一下下hehe Jiayouuu!🐠";
-        else if (hours === 11) greeting = "再坚持一下下, then can eat lunch liaooo!!🤤";
-        else if (hours >= 12 && hours < 14) greeting = "Enjoy your meal!! Then maybe take a short break or nap luu😪";
-        else if (hours >= 14 && hours < 16) greeting = "Eat liao, rest liaoo! 上班加油luu!😄";
-        else if (hours === 16) greeting = "再坚持一下下, then can off work luu!😆";
-        else if (hours === 17 || (hours === 18 && minutes <= 20)) greeting = "Yayyy!! off work luu! 路上小心, 不要被挤扁了 hehe!😬";
-        else if (hours >= 18 && hours < 20) greeting = "Enjoy ur dinner lu!! Eat more!😋";
-        else if (hours >= 20 && hours < 21) greeting = "Have fun in exercise or enjoy your me-time!😌";
-        else if (hours >= 21 && hours < 22) greeting = "Aaa need to prepare to get into bed liaoo!🥱";
-        else if (hours === 22 && minutes <= 30) greeting = "Late liaoo! Go rest, don't play phone dy heh!😛";
-        else if (hours > 22 && hours <= 23) greeting = "Good night!! Sweet dreams!🌛Rest well! 😴";
-        else greeting = "Sweet dreams!🌛 Sleep well until morning! ";
+        // if (hours >= 6 && hours < 8) greeting = "Good morning aaa!! Hope you slept well!!🌞";
+        // else if (hours === 8) greeting = "Enjoy your breakfast luu~~ 上班加油!!😺";
+        // else if (hours >= 9 && hours < 11) greeting = "Ooo 抓到在摸鱼了 hehe! Jiayouuu!🐠";
+        // else if (hours === 11) greeting = "再坚持一下下, can eat lunch liaooo!!🤤";
+        // else if (hours >= 12 && hours < 14) greeting = "Enjoy your meal!! Take a short nap luu😪";
+        // else if (hours >= 14 && hours < 16) greeting = "Eat liao, rest liaoo! 上班加油luu!😄";
+        // else if (hours === 16) greeting = "再坚持一下下, almost off work!😆";
+        // else if (hours === 17 || (hours === 18 && minutes <= 20)) greeting = "Yayyy!! off work luu! 路上小心!😬";
+        // else if (hours >= 18 && hours < 20) greeting = "Enjoy ur dinner lu!! Eat more!😋";
+        // else if (hours >= 20 && hours < 21) greeting = "Enjoy your me-time!😌";
+        // else if (hours >= 21 && hours < 22) greeting = "Need to prepare for bed liaoo!🥱";
+        // else if (hours === 22 && minutes <= 30) greeting = "Late liaoo! Don't play phone dy heh!😛";
+        // else if (hours > 22 || hours < 6) greeting = "Good night!! Sweet dreams!🌛 Rest well! 😴";
+        if (hours >= 1 && hours < 23) greeting = "nothing here yet.. come back later..?🫣";
+        else greeting = "nothing here yet.. come back later..?🫣";
 
         document.getElementById('greeting-text').textContent = greeting;
     }

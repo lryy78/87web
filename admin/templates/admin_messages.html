@@ -11,19 +11,21 @@
 
     /* --- SEARCH & FILTER BAR --- */
     .controls-row {
-        display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap;
+        display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;
     }
 
     .search-input, .filter-select {
         background: rgba(255, 255, 255, 0.05);
         border: 1px solid rgba(255, 255, 255, 0.1);
         border-radius: 10px;
-        padding: 8px 15px;
+        padding: 10px 15px;
         color: white;
-        font-size: 0.85rem;
+        font-size: 0.9rem;
         outline: none;
+        flex: 1; /* Grow to fill space on mobile */
+        min-width: 140px;
     }
-    .search-input { flex: 1; min-width: 200px; }
+    .search-input { min-width: 100%; order: -1; } /* Search stays top on mobile */
     .filter-select { cursor: pointer; }
     .filter-select option { background: #0f172a; }
 
@@ -35,10 +37,10 @@
         box-shadow: 0 20px 40px rgba(0,0,0,0.3);
     }
 
-    /* Column layout */
+    /* Desktop Column layout */
     .msg-item {
         display: grid;
-        grid-template-columns: 100px 120px 1fr 120px;
+        grid-template-columns: 100px 120px 1fr 130px;
         align-items: center;
         padding: 15px 20px;
         border-bottom: 1px solid rgba(255,255,255,0.05);
@@ -46,7 +48,7 @@
     }
     .msg-item:last-child { border-bottom: none; }
 
-    /* Sorting Header */
+    /* Sorting Header (Hidden on Mobile) */
     .sort-header {
         background: rgba(255,255,255,0.03);
         font-weight: 800;
@@ -63,7 +65,7 @@
     .badge-ps { background: rgba(168, 85, 247, 0.2); color: #a855f7; }
 
     .time-text { font-size: 0.85rem; color: rgba(255,255,255,0.5); font-family: monospace; }
-    .content-text { color: white; font-size: 0.95rem; }
+    .content-text { color: white; font-size: 0.95rem; line-height: 1.4; }
 
     .btn-create {
         background: #3b82f6; color: white; text-decoration: none;
@@ -72,13 +74,44 @@
 
     .status-toggle {
         display: inline-flex; align-items: center; text-decoration: none;
-        font-weight: 700; font-size: 0.75rem; padding: 6px 12px; border-radius: 8px;
+        font-weight: 700; font-size: 0.75rem; padding: 8px 12px; border-radius: 8px;
     }
     .status-active { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
     .status-inactive { background: rgba(239, 68, 68, 0.2); color: #f87171; }
     
-    .action-btn { color: rgba(255,255,255,0.2); text-decoration: none; margin-left: 10px; transition: 0.2s; }
+    .action-btn { 
+        color: rgba(255,255,255,0.2); text-decoration: none; 
+        font-size: 1.2rem; padding: 5px 10px; transition: 0.2s; 
+    }
     .action-btn:hover { color: #f87171; }
+
+    /* --- MOBILE RESPONSIVE --- */
+    @media (max-width: 768px) {
+        .sort-header { display: none; } /* Hide headers on mobile */
+        
+        .msg-item {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 20px;
+        }
+
+        .msg-item > div:nth-child(1) { width: 100%; display: flex; justify-content: space-between; align-items: center; }
+        
+        .time-text::before { content: "Time: "; color: rgba(255,255,255,0.3); font-size: 0.7rem; text-transform: uppercase; }
+        
+        .content-text { width: 100%; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 10px; }
+        
+        .msg-item > div:last-child {
+            width: 100%;
+            justify-content: space-between !important;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            padding-top: 12px;
+        }
+
+        .status-toggle { flex: 1; justify-content: center; }
+    }
 </style>
 
 <div class="admin-container">
@@ -129,9 +162,12 @@
                     <span class="badge {% if m.message_type == 'greeting' %}badge-greeting{% else %}badge-ps{% endif %}">
                         {{ m.message_type }}
                     </span>
-                </div>
+                    </div>
+                
                 <div class="time-text">{{ m.start_time }} - {{ m.end_time }}</div>
+                
                 <div class="content-text">{{ m.content }}</div>
+                
                 <div style="text-align: right; display: flex; align-items: center; justify-content: flex-end;">
                     <a href="{{ url_for('admin.toggle_message', msg_id=m.id) }}" 
                        class="status-toggle {% if m.active %}status-active{% else %}status-inactive{% endif %}">
@@ -166,8 +202,11 @@
             const matchesType = type === 'all' || row.getAttribute('data-type') === type;
             const matchesStatus = status === 'all' || row.getAttribute('data-status') === status;
 
+            // In mobile view (max-width: 768px), we want 'flex' instead of 'grid'
+            const isMobile = window.innerWidth <= 768;
+            
             if (matchesSearch && matchesType && matchesStatus) {
-                row.style.display = 'grid';
+                row.style.display = isMobile ? 'flex' : 'grid';
             } else {
                 row.style.display = 'none';
             }
@@ -188,5 +227,8 @@
     [searchInput, typeFilter, statusFilter, sortBy].forEach(el => {
         el.addEventListener('input', filterAndSort);
     });
+
+    // Handle display style on resize
+    window.addEventListener('resize', filterAndSort);
 </script>
 {% endblock %}

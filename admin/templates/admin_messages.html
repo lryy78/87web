@@ -168,14 +168,23 @@
                 
                 <div class="content-text">{{ m.content }}</div>
                 
-                <div style="text-align: right; display: flex; align-items: center; justify-content: flex-end;">
+                <div style="text-align: right; display: flex; align-items: center; gap: 6px; justify-content: flex-end;">
+    
+                    <a href="{{ url_for('admin.edit_message', msg_id=m.id) }}"
+                      class="status-toggle"
+                      style="background: rgba(59,130,246,0.2); color:#60a5fa;">
+                      EDIT
+                    </a>
+
                     <a href="{{ url_for('admin.toggle_message', msg_id=m.id) }}" 
-                       class="status-toggle {% if m.active %}status-active{% else %}status-inactive{% endif %}">
+                      class="status-toggle {% if m.active %}status-active{% else %}status-inactive{% endif %}">
                         {{ "ACTIVE" if m.active else "DISABLED" }}
                     </a>
+
                     <a href="{{ url_for('admin.delete_ui_message', msg_id=m.id) }}" 
-                       class="action-btn" onclick="return confirm('Delete this message?')">✕</a>
+                      class="action-btn" onclick="return confirm('Delete this message?')">✕</a>
                 </div>
+
             </div>
             {% endfor %}
         </div>

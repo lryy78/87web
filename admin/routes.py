@@ -165,3 +165,37 @@ def delete_ui_message(msg_id):
     supabase.table("ui_messages").delete().eq("id", msg_id).execute()
     flash("Message deleted.", "info")
     return redirect(url_for("admin.admin_messages"))
+
+# ---------------- Edit Greeting / PS Message ----------------
+@admin_bp.route("/messages/edit/<msg_id>", methods=["GET", "POST"])
+def edit_message(msg_id):
+    if not session.get("admin_logged_in"):
+        return redirect(url_for("admin.admin_login"))
+
+    # Fetch existing message
+    resp = supabase.table("ui_messages").select("*").eq("id", msg_id).single().execute()
+    message = resp.data
+
+    if not message:
+        flash("Message not found.", "error")
+        return redirect(url_for("admin.admin_messages"))
+
+    if request.method == "POST":
+        try:
+            update_data = {
+                "message_type": request.form.get("message_type"),
+                "content": request.form.get("content"),
+                "start_time": request.form.get("start_time"),
+                "end_time": request.form.get("end_time"),
+                "active": True if request.form.get("active") == "on" else False,
+            }
+
+            supabase.table("ui_messages").update(update_data).eq("id", msg_id).execute()
+            flash("Message updated successfully!", "success")
+            return redirect(url_for("admin.admin_messages"))
+
+        except Exception as e:
+            print("[EDIT MESSAGE ERROR]", e)
+            flash(f"Update failed: {e}", "error")
+
+    return render_template("create_message.html", message=message, edit_mode=True)

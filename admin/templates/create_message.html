@@ -212,14 +212,18 @@
             <div class="form-group">
                 <label>Message Category</label>
                 <select name="message_type" id="type-select">
-                    <option value="greeting">✨ Main Greeting</option>
-                    <option value="ps">📝 PS Footnote</option>
+                    <option value="greeting" {{ 'selected' if message and message.message_type == 'greeting' else '' }}>
+                        ✨ Main Greeting
+                    </option>
+                    <option value="ps" {{ 'selected' if message and message.message_type == 'ps' else '' }}>
+                        📝 PS Footnote
+                    </option>
                 </select>
             </div>
 
             <div class="form-group">
                 <label>Content</label>
-                <textarea name="content" id="content-input" placeholder="Type message..." required rows="3"></textarea>
+                <textarea name="content" id="content-input" required rows="3">{{ message.content if message else '' }}</textarea>
             </div>
 
             <div class="form-group" style="margin-top: 35px;">
@@ -227,12 +231,14 @@
                 <div class="time-grid">
                     <div class="time-field">
                         <small>From</small>
-                        <input type="text" name="start_time" id="start-time" value="00:00" maxlength="5" placeholder="00:00">
+                        <input type="text" name="start_time" id="start-time"
+                            value="{{ message.start_time if message else '00:00' }}" maxlength="5">
                     </div>
                     <span style="opacity: 0.3;">to</span>
                     <div class="time-field">
                         <small>Until</small>
-                        <input type="text" name="end_time" id="end-time" value="23:59" maxlength="5" placeholder="23:59">
+                        <input type="text" name="end_time" id="end-time"
+                                value="{{ message.end_time if message else '23:59' }}" maxlength="5">
                     </div>
                 </div>
                 <div class="time-presets">
@@ -244,11 +250,12 @@
             </div>
 
             <div class="checkbox-container">
-                <input type="checkbox" name="active" id="active" checked style="width:18px; height:18px; accent-color:var(--accent);">
+                <input type="checkbox" name="active" id="active"
+                        {{ 'checked' if not message or message.active else '' }} checked style="width:18px; height:18px; accent-color:var(--accent);">
                 <label for="active" style="margin:0; text-transform: none; color: white; font-weight: 400; opacity: 0.8;">Enable message immediately</label>
             </div>
 
-            <button type="submit" class="submit-btn">Deploy Message</button>
+            <button type="submit" class="submit-btn">{{ "Update Message" if edit_mode else "Deploy Message" }}</button>
         </form>
 
         <div class="preview-box">

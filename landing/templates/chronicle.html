@@ -347,9 +347,6 @@
             if (data.success && data.posts.length !== lastPostCount) {
                 renderPosts(data.posts);
                 lastPostCount = data.posts.length;
-                setTimeout(() => {
-                    chatArea.scrollTo({ top: chatArea.scrollHeight, behavior: 'smooth' });
-                }, 100);
             }
         } catch (err) { console.error("Feed error:", err); }
     }
@@ -367,37 +364,42 @@
 
     function renderPosts(posts) {
         if (posts.length === 0) {
-            chatArea.innerHTML = '<div style="text-align:center; opacity:0.3; margin-top:40%;">No posts yet...</div>';
+            chatArea.innerHTML =
+                '<div style="text-align:center; opacity:0.3; margin-top:40%;">No posts yet...</div>';
             return;
         }
 
         chatArea.innerHTML = posts.map(post => {
             let mediaHtml = '';
             if (post.media_type === 'image') {
-                mediaHtml = `<div class="media-box"><img src="${post.media_url}" loading="lazy"></div>`;
+                mediaHtml = `<div class="media-box">
+                    <img src="${post.media_url}" loading="lazy">
+                </div>`;
             } else if (post.media_type === 'video') {
-                mediaHtml = `<div class="media-box"><video controls preload="metadata"><source src="${post.media_url}"></video></div>`;
+                mediaHtml = `<div class="media-box">
+                    <video controls preload="metadata">
+                        <source src="${post.media_url}">
+                    </video>
+                </div>`;
             } else if (post.media_type === 'spotify') {
                 mediaHtml = `
                 <div class="media-box spotify-container" style="position: relative;">
-                    <div class="spotify-overlay" 
+                    <div class="spotify-overlay"
                         onclick="handleSpotifyClick(this, '${post.media_url}')"
-                        style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; cursor: pointer;">
+                        style="position:absolute; inset:0; z-index:10; cursor:pointer;">
                     </div>
                     <iframe 
                         src="${post.media_url}" 
-                        width="100%" height="152" 
-                        frameBorder="0" 
-                        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
-                        style="border-radius:12px; position: relative; z-index: 5;"
+                        width="100%" height="152"
+                        frameBorder="0"
+                        allow="autoplay; encrypted-media"
+                        style="border-radius:12px;"
                         loading="lazy">
                     </iframe>
                 </div>`;
             }
 
-            // --- MALAYSIA TIME CONVERSION ---
-            const utcDate = new Date(post.created_at);
-            const malaysiaTime = utcDate.toLocaleString('en-GB', {
+            const malaysiaTime = new Date(post.created_at).toLocaleString('en-GB', {
                 timeZone: 'Asia/Kuala_Lumpur',
                 day: '2-digit',
                 month: '2-digit',
@@ -415,7 +417,32 @@
                 </div>
             `;
         }).join('');
+
+        waitForMedia(chatArea).then(() => {
+            chatArea.scrollTop = chatArea.scrollHeight;
+        });
     }
+
+    function waitForMedia(container) {
+        const media = container.querySelectorAll('img, video');
+        if (!media.length) return Promise.resolve();
+
+        return Promise.all(
+            [...media].map(el => {
+                if (
+                    (el.tagName === 'IMG' && el.complete) ||
+                    (el.tagName === 'VIDEO' && el.readyState >= 2)
+                ) {
+                    return Promise.resolve();
+                }
+                return new Promise(res => {
+                    el.onload = el.onloadeddata = el.onerror = res;
+                });
+            })
+        );
+    }
+
+
 
     setInterval(checkSession, 1000);
     setInterval(updateChronicle, 5000);

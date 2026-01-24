@@ -407,8 +407,11 @@ def edit_chronicle(post_id):
         return redirect(url_for("admin.admin_login"))
 
     # 1. Fetch existing post
-    resp = supabase.table("chronicle_posts").select("*").eq("id", post_id).single().execute()
-    post = resp.data
+    try:
+        resp = supabase.table("chronicle_posts").select("*").eq("id", post_id).single().execute()
+        post = resp.data
+    except Exception as e:
+        post = None
 
     if not post:
         flash("Post not found.", "error")
@@ -417,20 +420,41 @@ def edit_chronicle(post_id):
     if request.method == "POST":
         try:
             content = request.form.get("content")
-            # Note: We usually don't allow changing media_type/file on edit 
-            # to keep it simple, but we update the text content.
+            media_type = request.form.get("media_type")
             
             update_data = {
                 "content": content,
-                "updated_at": "now()" # Supabase handles this if you have a column, else remove
+                "media_type": media_type
             }
 
+            # --- Handling NEW File Uploads during Edit ---
+            if media_type in ['image', 'video']:
+                file = request.files.get('file')
+                if file and file.filename != '':
+                    file_extension = file.filename.rsplit('.', 1)[-1]
+                    unique_name = f"{uuid.uuid4()}.{file_extension}"
+                    file_path = f"uploads/{unique_name}"
+                    
+                    # Upload and get URL
+                    supabase.storage.from_("chronicle").upload(
+                        path=file_path, 
+                        file=file.read(), 
+                        file_options={"content-type": file.content_type}
+                    )
+                    update_data["media_url"] = supabase.storage.from_("chronicle").get_public_url(file_path)
+
+            elif media_type == 'spotify':
+                raw_url = request.form.get("spotify_url")
+                if "track/" in raw_url:
+                    track_id = raw_url.split("track/")[1].split("?")[0]
+                    update_data["media_url"] = f"https://open.spotify.com/embed/track/{track_id}"
+
+            # 2. Update the database (Removed 'updated_at' to prevent the error)
             supabase.table("chronicle_posts").update(update_data).eq("id", post_id).execute()
             flash("Chronicle updated successfully!", "success")
             return redirect(url_for("admin.manage_chronicle"))
 
         except Exception as e:
-            flash(f"Update failed: {e}", "error")
+            flash(f"Update failed: {str(e)}", "error")
 
-    # Reuse create_chronicle.html but pass the post object and edit_mode flag
     return render_template("create_chronicle.html", post=post, edit_mode=True)

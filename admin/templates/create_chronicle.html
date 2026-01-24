@@ -160,6 +160,22 @@
         border-color: var(--error-red) !important;
         box-shadow: 0 0 10px rgba(255, 77, 77, 0.2) !important;
     }
+
+    .media-preview-container {
+        width: 100%;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: #000;
+    }
+
+    .media-preview-container img, 
+    .media-preview-container video {
+        width: 100%;
+        max-height: 200px;
+        object-fit: cover;
+        display: block;
+    }
 </style>
 
 <div id="errorModal">
@@ -175,31 +191,31 @@
     <div class="header-flex" style="margin-bottom: 25px; display: flex; align-items: flex-end; justify-content: space-between;">
         <div>
             <span style="color: var(--accent-blue); font-size: 0.8rem; font-weight: 800;">COMMAND CENTER</span>
-            <h2 style="font-weight: 800; margin: 0; font-size: 1.8rem;">New Transmission</h2>
+            <h2 style="font-weight: 800; margin: 0; font-size: 1.8rem;">{{ 'Modify Transmission' if edit_mode else 'New Transmission' }}</h2>
         </div>
         <a href="{{ url_for('admin.dashboard') }}" style="color: rgba(255,255,255,0.4); text-decoration: none; font-size: 1.2rem;">✕</a>
     </div>
 
     <div class="glass-card">
-        <form id="postForm" method="POST" enctype="multipart/form-data" action="{{ url_for('admin.create_chronicle_post') }}">
+        <form id="postForm" method="POST" enctype="multipart/form-data">
             
-            <input type="hidden" name="media_type" id="mediaType" value="none">
+            <input type="hidden" name="media_type" id="mediaType" value="{{ post.media_type if post else 'none' }}">
 
             <label class="input-label">Transmission Mode</label>
             <div class="mode-grid">
-                <div class="mode-card selected" onclick="setMode('none', this)">
+                <div class="mode-card {{ 'selected' if (not post or post.media_type == 'none') else '' }}" id="mode-none" onclick="setMode('none', this)">
                     <i>💬</i>
                     <span>TEXT ONLY</span>
                 </div>
-                <div class="mode-card" onclick="setMode('image', this)">
+                <div class="mode-card {{ 'selected' if (post and post.media_type == 'image') else '' }}" id="mode-image" onclick="setMode('image', this)">
                     <i>📸</i>
                     <span>IMAGE FEED</span>
                 </div>
-                <div class="mode-card" onclick="setMode('video', this)">
+                <div class="mode-card {{ 'selected' if (post and post.media_type == 'video') else '' }}" id="mode-video" onclick="setMode('video', this)">
                     <i>🎥</i>
                     <span>VIDEO FEED</span>
                 </div>
-                <div class="mode-card" onclick="setMode('spotify', this)">
+                <div class="mode-card {{ 'selected' if (post and post.media_type == 'spotify') else '' }}" id="mode-spotify" onclick="setMode('spotify', this)">
                     <i>🎵</i>
                     <span>SPOTIFY</span>
                 </div>
@@ -207,23 +223,37 @@
 
             <div style="margin-bottom: 25px;">
                 <label class="input-label">Message Payload</label>
-                <textarea name="content" id="textContent" class="custom-input" placeholder="Encryption unnecessary... type message here." style="height:100px; resize: none;"></textarea>
+                <textarea name="content" id="textContent" class="custom-input" placeholder="Type message here." style="height:100px; resize: none;">{{ post.content if post else '' }}</textarea>
             </div>
 
-            {% if not edit_mode %}
             <div id="fileInputSection" style="margin-bottom: 25px; display: none;">
-                <label class="input-label" id="fileDynamicLabel">Upload Content</label>
+                <label class="input-label" id="fileDynamicLabel">Content Source</label>
+                
+                {% if edit_mode and post.media_url and post.media_type in ['image', 'video'] %}
+                <div class="media-preview-container" style="margin-bottom: 15px;">
+                    <small style="color: var(--accent-blue); display: block; margin-bottom: 5px;">CURRENT PAYLOAD</small>
+                    {% if post.media_type == 'image' %}
+                        <img src="{{ post.media_url }}">
+                    {% else %}
+                        <video src="{{ post.media_url }}" muted autoplay loop></video>
+                    {% endif %}
+                </div>
+                {% endif %}
+
                 <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileControl').click()">
-                    <span id="dropZoneText" style="color: rgba(255,255,255,0.4);">Click to browse local files</span>
+                    <span id="dropZoneText" style="color: rgba(255,255,255,0.4);">
+                        {{ 'Click to replace existing file' if edit_mode else 'Click to browse local files' }}
+                    </span>
                     <input type="file" name="file" id="fileControl" hidden onchange="updateFileName()">
                 </div>
             </div>
 
             <div id="urlInputSection" style="margin-bottom: 25px; display: none;">
                 <label class="input-label">Spotify Link</label>
-                <input type="text" name="spotify_url" id="spotifyUrl" class="custom-input" placeholder="Paste Spotify Track URL...">
+                <input type="text" name="spotify_url" id="spotifyUrl" class="custom-input" 
+                       placeholder="Paste Spotify Track URL..."
+                       value="{{ post.media_url if post and post.media_type == 'spotify' else '' }}">
             </div>
-            {% endif %}
 
             <button type="submit" id="submitBtn" class="btn-dispatch" style="width:100%;">
                 {{ '💾 Save Changes' if edit_mode else '🚀 Initiate Broadcast' }}
@@ -233,6 +263,13 @@
 </div>
 
 <script>
+    // Initial setup on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const currentMode = document.getElementById('mediaType').value;
+    const currentCard = document.getElementById('mode-' + currentMode);
+    if (currentCard) setMode(currentMode, currentCard);
+});
+
 function setMode(mode, element) {
     document.getElementById('mediaType').value = mode;
     document.querySelectorAll('.mode-card').forEach(card => card.classList.remove('selected'));
@@ -273,6 +310,7 @@ function closeModal() {
 }
 
 document.getElementById('postForm').onsubmit = function(e) {
+    const isEditMode = "{{ 'true' if edit_mode else 'false' }}" === 'true';
     const type = document.getElementById('mediaType').value;
     const content = document.getElementById('textContent').value.trim();
     const fileInput = document.getElementById('fileControl');

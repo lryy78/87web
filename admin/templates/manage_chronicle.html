@@ -69,14 +69,23 @@
                     </td>
 
                     <td class="actions-cell">
-                        <form method="POST" action="{{ url_for('admin.toggle_chronicle', post_id=post.id) }}">
-                            <button type="submit" class="action-btn-small">
-                                {{ "Hide" if post.is_active else "Show" }}
-                            </button>
-                        </form>
-                        <a href="{{ url_for('admin.delete_chronicle', post_id=post.id) }}" 
-                           onclick="return confirm('Permanent delete?')"
-                           class="delete-link">Delete</a>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <a href="{{ url_for('admin.edit_chronicle', post_id=post.id) }}" 
+                            class="action-btn-small" 
+                            style="text-decoration: none; background: rgba(0, 210, 255, 0.1); border-color: var(--accent-blue); color: var(--accent-blue);">
+                                Edit
+                            </a>
+
+                            <form method="POST" action="{{ url_for('admin.toggle_chronicle', post_id=post.id) }}" style="margin: 0;">
+                                <button type="submit" class="action-btn-small">
+                                    {{ "Hide" if post.is_active else "Show" }}
+                                </button>
+                            </form>
+
+                            <a href="{{ url_for('admin.delete_chronicle', post_id=post.id) }}" 
+                            onclick="return confirm('Permanent delete?')"
+                            class="delete-link">Delete</a>
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}

@@ -325,6 +325,7 @@
     const ADMIN_PREVIEW = {{ 'true' if admin_preview else 'false' }};
     const LOCK_TIME_MS = 10 * 60 * 1000;
     let lastPostCount = 0;
+    let lastDataSnapshot = "";
 
     // --- SESSION CHECK ---
     function checkSession() {
@@ -383,6 +384,17 @@
             if (data.success && data.posts.length !== lastPostCount) {
                 renderPosts(data.posts);
                 lastPostCount = data.posts.length;
+            }
+
+            if (data.success) {
+                // Convert current posts to a string to compare with the last known version
+                const currentSnapshot = JSON.stringify(data.posts);
+                
+                if (currentSnapshot !== lastDataSnapshot) {
+                    renderPosts(data.posts);
+                    lastDataSnapshot = currentSnapshot;
+                    console.log("Feed updated: Change detected in content or count.");
+                }
             }
         } catch (err) { console.error("Feed error:", err); }
     }

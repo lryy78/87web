@@ -73,7 +73,7 @@ def view_table(db_name, table_name):
         else:
             query = query.order("id", desc=True)
 
-        resp = query.limit(500).execute()
+        resp = query.limit(2000).execute()
         rows = resp.data or []
         columns = list(rows[0].keys()) if rows else []
 
